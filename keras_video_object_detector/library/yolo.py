@@ -1,5 +1,7 @@
 import argparse
 import os
+
+import cv2
 import matplotlib.pyplot as plt
 from keras.models import load_model
 from matplotlib.pyplot import imshow
@@ -208,7 +210,14 @@ def yolo_eval_test():
 
 class YoloObjectDetector(object):
 
-    def __init__(self):
+    def __init__(self, frame_width=None, frame_height=None):
+        if frame_width is None:
+            frame_width = 1280
+        if frame_height is None:
+            frame_height = 720
+        self.frame_width = frame_width
+        self.frame_height = frame_height
+
         self.scores = None
         self.boxes = None
         self.classes = None
@@ -216,7 +225,7 @@ class YoloObjectDetector(object):
         self.sess = K.get_session()
         self.class_names = None
         self.anchors = None
-        self.image_shape = (720., 1280.)
+        self.image_shape = (float(self.frame_height), float(self.frame_width))
         self.yolo_outputs = None
 
     def load_model(self, model_dir_path):
@@ -264,7 +273,7 @@ class YoloObjectDetector(object):
 
         return [image, out_scores, out_boxes, out_classes]
 
-    def predict_objects_in_video(self, video_file_path, temp_image_folder=None):
+    def detect_objects_in_video(self, video_file_path, output_video_path, temp_image_folder=None):
         if temp_image_folder is None:
             temp_image_folder = 'temp_images'
 
@@ -280,7 +289,11 @@ class YoloObjectDetector(object):
         if not os.path.exists(target_image_folder):
             os.mkdir(target_image_folder)
 
-        extract_images(video_file_path, source_image_folder, image_shape=(1280, 720))
+        extract_images(video_file_path, source_image_folder, image_shape=(self.frame_width, self.frame_height))
+
+        out = cv2.VideoWriter(output_video_path, -1, 20.0, (self.frame_width, self.frame_height))
+
+        result = []
 
         for f in os.listdir(source_image_folder):
             image_file = source_image_folder + os.path.sep + f
@@ -296,6 +309,10 @@ class YoloObjectDetector(object):
                 # Save the predicted bounding box on the image
                 output_image_file = target_image_folder + os.path.sep + f
                 image.save(output_image_file, quality=90)
+                out.write(np.array(image))  # Write out frame to video
+                result.append([f, out_scores, out_boxes, out_classes])
+
+        np.save(output_video_path + '.npy', np.array(result))
 
 
 def main():
