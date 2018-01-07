@@ -291,7 +291,7 @@ class YoloObjectDetector(object):
 
         extract_images(video_file_path, source_image_folder, image_shape=(self.frame_width, self.frame_height))
 
-        out = cv2.VideoWriter(output_video_path, -1, 20.0, (self.frame_width, self.frame_height))
+        out = cv2.VideoWriter(output_video_path, -1, 20.0, (self.frame_width, self.frame_height), False)
 
         result = []
 
@@ -312,7 +312,8 @@ class YoloObjectDetector(object):
                 out.write(np.array(image))  # Write out frame to video
                 result.append([f, out_scores, out_boxes, out_classes])
 
-        np.save(output_video_path + '.npy', np.array(result))
+        out.release()
+        return result
 
 
 def main():

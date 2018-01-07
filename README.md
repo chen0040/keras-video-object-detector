@@ -8,8 +8,7 @@ Object detector in videos using keras and YOLO
 
 The demo code below can be found in [keras_object_detection/demo/detect_objects_in_video.py](keras_object_detection/demo/detect_objects_in_video.py)
 
-The demo codes takes in a sample video and output another video that has the detected boxes with class labels, it also saved all the 
-predicted boxes and class labels into a npy file 
+The demo codes takes in a sample video and output another video that has the detected boxes with class labels 
 
 ```python
 from keras_video_object_detector.library.download_utils import download_file
@@ -27,7 +26,7 @@ download_file(video_file_path, url_path='https://www.dropbox.com/s/9nlph8ha6g1kx
 detector = YoloObjectDetector()
 detector.load_model(model_dir_path)
 
-detector.detect_objects_in_video(video_file_path=video_file_path,
+result = detector.detect_objects_in_video(video_file_path=video_file_path,
                                  output_video_path=output_video_file_path,
                                  temp_image_folder=temp_image_folder)
 ```
