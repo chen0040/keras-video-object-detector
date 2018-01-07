@@ -6,6 +6,11 @@ __pycache__/
 # C extensions
 *.so
 
+.idea/
+*.iml
+
+keras_video_object_detector/models/yolo.h5
+
 # Distribution / packaging
 .Python
 env/
