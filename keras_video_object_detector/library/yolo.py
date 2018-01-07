@@ -13,6 +13,7 @@ from keras import backend as K
 from keras.layers import Input, Lambda, Conv2D
 
 from keras_video_object_detector.library.download_utils import download_file
+from keras_video_object_detector.library.video_utils import extract_images
 from keras_video_object_detector.library.yolo_utils import read_classes, read_anchors, generate_colors, preprocess_image, \
     draw_boxes, scale_boxes
 from keras_video_object_detector.library.yad2k.models.keras_yolo import yolo_head, yolo_boxes_to_corners, \
@@ -236,7 +237,7 @@ class YoloObjectDetector(object):
         # You're now ready to perform filtering and select only the best boxes.
         self.scores, self.boxes, self.classes = yolo_eval(self.yolo_outputs, self.image_shape)
 
-    def predict(self, image_file):
+    def predict_objects_in_image(self, image_file):
         """
         Runs the graph stored in "sess" to predict boxes for "image_file". Prints and plots the preditions.
 
@@ -262,6 +263,39 @@ class YoloObjectDetector(object):
                                                                       })
 
         return [image, out_scores, out_boxes, out_classes]
+
+    def predict_objects_in_video(self, video_file_path, temp_image_folder=None):
+        if temp_image_folder is None:
+            temp_image_folder = 'temp_images'
+
+        if not os.path.exists(temp_image_folder):
+            os.mkdir(temp_image_folder)
+
+        source_image_folder = temp_image_folder + os.path.sep + 'source'
+        target_image_folder = temp_image_folder + os.path.sep + 'output'
+
+        if not os.path.exists(source_image_folder):
+            os.mkdir(source_image_folder)
+
+        if not os.path.exists(target_image_folder):
+            os.mkdir(target_image_folder)
+
+        extract_images(video_file_path, source_image_folder)
+
+        for f in os.listdir(source_image_folder):
+            image_file = source_image_folder + os.path.sep + f
+
+            if os.path.isfile(image_file):
+                image, out_scores, out_boxes, out_classes = self.predict_objects_in_image(image_file)
+                # Print predictions info
+                print('Found {} boxes for {}'.format(len(out_boxes), image_file))
+                # Generate colors for drawing bounding boxes.
+                colors = generate_colors(self.class_names)
+                # Draw bounding boxes on the image file
+                draw_boxes(image, out_scores, out_boxes, out_classes, self.class_names, colors)
+                # Save the predicted bounding box on the image
+                output_image_file = target_image_folder + os.path.sep + f
+                image.save(output_image_file, quality=90)
 
 
 def main():

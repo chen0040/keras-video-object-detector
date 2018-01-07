@@ -10,6 +10,8 @@ __pycache__/
 *.iml
 
 keras_video_object_detector/models/yolo.h5
+keras_video_object_detector/demo/videos
+keras_video_object_detector/demo/frames
 
 # Distribution / packaging
 .Python
