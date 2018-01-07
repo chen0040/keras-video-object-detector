@@ -280,7 +280,7 @@ class YoloObjectDetector(object):
         if not os.path.exists(target_image_folder):
             os.mkdir(target_image_folder)
 
-        extract_images(video_file_path, source_image_folder)
+        extract_images(video_file_path, source_image_folder, image_shape=(1280, 720))
 
         for f in os.listdir(source_image_folder):
             image_file = source_image_folder + os.path.sep + f
