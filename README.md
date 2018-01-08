@@ -6,7 +6,7 @@ Object detector in videos using keras and YOLO
 
 ### Detect objects in an image using YOLO algorithm
 
-The demo code below can be found in [keras_object_detection/demo/detect_objects_in_video.py](keras_object_detection/demo/detect_objects_in_video.py)
+The demo code below can be found in [keras_video_object_detector/demo/detect_objects_in_video.py](keras_video_object_detector/demo/detect_objects_in_video.py)
 
 The demo codes takes in a sample video and output another video that has the detected boxes with class labels 
 
