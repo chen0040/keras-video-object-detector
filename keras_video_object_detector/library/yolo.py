@@ -292,7 +292,7 @@ class YoloObjectDetector(object):
         files_to_delete = []
         for f in os.listdir(source_image_folder):
             image_file = source_image_folder + os.path.sep + f
-            if os.path.isfile(image_file):
+            if os.path.isfile(image_file) and image_file.endswith('.jpg'):
                 files_to_delete.append(image_file)
 
         for image_file in files_to_delete:
@@ -310,7 +310,7 @@ class YoloObjectDetector(object):
         for f in os.listdir(source_image_folder):
             image_file = source_image_folder + os.path.sep + f
 
-            if os.path.isfile(image_file):
+            if os.path.isfile(image_file) and image_file.endswith('.jpg'):
                 image, out_scores, out_boxes, out_classes = self.predict_objects_in_image(image_file)
                 # Print predictions info
                 print('Found {} boxes for {}'.format(len(out_boxes), image_file))
