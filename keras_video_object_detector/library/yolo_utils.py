@@ -53,6 +53,13 @@ def preprocess_image(img_path, model_image_size):
     return image, image_data
 
 
+def preprocess_image_data(image):
+    image_data = np.array(image, dtype='float32')
+    image_data /= 255.
+    image_data = np.expand_dims(image_data, 0)  # Add batch dimension.
+    return image, image_data
+
+
 def draw_boxes(image, out_scores, out_boxes, out_classes, class_names, colors):
     font = ImageFont.truetype(font='font/FiraMono-Medium.otf',
                               size=np.floor(3e-2 * image.size[1] + 0.5).astype('int32'))

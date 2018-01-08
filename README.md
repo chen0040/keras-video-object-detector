@@ -4,7 +4,7 @@ Object detector in videos using keras and YOLO
 
 # Usage
 
-### Detect objects in an image using YOLO algorithm
+### Detect objects in a video file using YOLO algorithm
 
 The demo code below can be found in [keras_video_object_detector/demo/detect_objects_in_video.py](keras_video_object_detector/demo/detect_objects_in_video.py)
 
@@ -29,4 +29,27 @@ detector.load_model(model_dir_path)
 result = detector.detect_objects_in_video(video_file_path=video_file_path,
                                  output_video_path=output_video_file_path,
                                  temp_image_folder=temp_image_folder)
+```
+
+### Real-time Detect objects in a camera using YOLO algorithm
+
+The demo code below can be found in [keras_video_object_detector/demo/detect_objects_in_camera.py](keras_video_object_detector/demo/detect_objects_in_camera.py)
+
+The demo codes uses the camera from opencv-pyton and adds the detected boxes with class labels to the camera frames: 
+
+```python
+import cv2
+from keras_video_object_detector.library.yolo import YoloObjectDetector
+
+model_dir_path = 'keras_video_object_detector/models'
+
+detector = YoloObjectDetector()
+detector.load_model(model_dir_path)
+
+camera = cv2.VideoCapture(0)
+
+detector.detect_objects_in_camera(camera=camera)
+
+camera.release()
+cv2.destroyAllWindows()
 ```

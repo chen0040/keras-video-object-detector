@@ -3,6 +3,7 @@ import os
 
 import cv2
 import matplotlib.pyplot as plt
+from PIL import Image
 from keras.models import load_model
 from matplotlib.pyplot import imshow
 import scipy.io
@@ -16,8 +17,9 @@ from keras.layers import Input, Lambda, Conv2D
 
 from keras_video_object_detector.library.download_utils import download_file
 from keras_video_object_detector.library.video_utils import extract_images
-from keras_video_object_detector.library.yolo_utils import read_classes, read_anchors, generate_colors, preprocess_image, \
-    draw_boxes, scale_boxes
+from keras_video_object_detector.library.yolo_utils import read_classes, read_anchors, generate_colors, \
+    preprocess_image, \
+    draw_boxes, scale_boxes, preprocess_image_data
 from keras_video_object_detector.library.yad2k.models.keras_yolo import yolo_head, yolo_boxes_to_corners, \
     preprocess_true_boxes, yolo_loss, yolo_body
 
@@ -273,6 +275,35 @@ class YoloObjectDetector(object):
 
         return [image, out_scores, out_boxes, out_classes]
 
+    def predict_objects_in_image_frame(self, image):
+        """
+        Runs the graph stored in "sess" to predict boxes for "image_file". Prints and plots the preditions.
+
+        Arguments:
+        sess -- your tensorflow/Keras session containing the YOLO graph
+        image_file -- name of an image stored in the "images" folder.
+
+        Returns:
+        out_scores -- tensor of shape (None, ), scores of the predicted boxes
+        out_boxes -- tensor of shape (None, 4), coordinates of the predicted boxes
+        out_classes -- tensor of shape (None, ), class index of the predicted boxes
+
+        Note: "None" actually represents the number of predicted boxes, it varies between 0 and max_boxes.
+        """
+
+        # Preprocess your image
+        model_image_size = (608, 608)
+        resized_image = image.resize(tuple(reversed(model_image_size)), Image.BICUBIC)
+        image_scaled, image_data = preprocess_image_data(resized_image)
+
+        # Run the session with the correct tensors and choose the correct placeholders in the feed_dict.
+        out_scores, out_boxes, out_classes = self.sess.run([self.scores, self.boxes, self.classes],
+                                                           feed_dict={self.yolo_model.input: image_data,
+                                                                      K.learning_phase(): 0
+                                                                      })
+
+        return [image, out_scores, out_boxes, out_classes]
+
     def detect_objects_in_video(self, video_file_path, output_video_path, temp_image_folder=None):
         if temp_image_folder is None:
             temp_image_folder = 'temp_images'
@@ -326,6 +357,34 @@ class YoloObjectDetector(object):
 
         out.release()
         return result
+
+    def detect_objects_in_camera(self, camera):
+        while True:
+            # grab the current frame
+            (grabbed, frame) = camera.read()
+
+            # check to see if we have reached the end of the
+            # video
+            if not grabbed:
+                break
+
+            cv2_im = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            pil_im = Image.fromarray(cv2_im)
+
+            image, out_scores, out_boxes, out_classes = self.predict_objects_in_image_frame(pil_im)
+            # Print predictions info
+            print('Found {} boxes'.format(len(out_boxes)))
+            # Generate colors for drawing bounding boxes.
+            colors = generate_colors(self.class_names)
+            # Draw bounding boxes on the image file
+            draw_boxes(image, out_scores, out_boxes, out_classes, self.class_names, colors)
+
+            cv2.imshow("Press q key to quit", np.array(image))
+            key = cv2.waitKey(1) & 0xFF
+
+            # if the 'q' key is pressed, stop the loop
+            if key == ord("q"):
+                break
 
 
 def main():
