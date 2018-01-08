@@ -289,9 +289,21 @@ class YoloObjectDetector(object):
         if not os.path.exists(target_image_folder):
             os.mkdir(target_image_folder)
 
-        extract_images(video_file_path, source_image_folder, image_shape=(self.frame_width, self.frame_height))
+        files_to_delete = []
+        for f in os.listdir(source_image_folder):
+            image_file = source_image_folder + os.path.sep + f
+            if os.path.isfile(image_file):
+                files_to_delete.append(image_file)
 
-        out = cv2.VideoWriter(output_video_path, -1, 20.0, (self.frame_width, self.frame_height), False)
+        for image_file in files_to_delete:
+            os.remove(image_file)
+
+        frames_per_second = 5
+        extract_images(video_file_path, source_image_folder, image_shape=(self.frame_width, self.frame_height),
+                       frames_per_second=frames_per_second)
+
+        _fourcc = cv2.VideoWriter.fourcc(*'MP4V')
+        out = cv2.VideoWriter(output_video_path, _fourcc, frames_per_second, (self.frame_width, self.frame_height))
 
         result = []
 
